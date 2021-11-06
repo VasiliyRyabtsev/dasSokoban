@@ -1,26 +1,20 @@
 require strings
 require daslib/media
 
+require levels
+
 var imgCrate <- create_image("resources/crate.png")
 let imgBrick <- create_image("resources/bricks.png")
 var imgPoint <- create_image("resources/point.png")
 var charAtlas <- create_image("resources/char.png")
 
 
-let levelSrc <- [[auto
-    "#######";
-    "#  .  #";
-    "#  $  #";
-    "# $ @ #";
-    "# .   #";
-    "#######"
-]]
-
 let
     WALL   = 0x1
     BOX    = 0x2
     TARGET = 0x4
 
+var cur_level = 0
 var level:array<array<uint>>
 
 let cellTypeMap:table<int; uint> <- {{'#' => WALL; '$' => BOX; '.' => TARGET}}
@@ -30,7 +24,7 @@ var charDir = 2 // clockwise starting from up=0
 let dirDeltaPos <- [[int2[] int2(-1,0); int2(0,1); int2(1,0); int2(0,-1)]]
 
 
-def parse_level(src: string[])
+def parse_level(src)
     var levelArr <- [{for row in src;
         [{for cell in row;
             cellTypeMap |> find(cell) ?? 0u
@@ -39,7 +33,7 @@ def parse_level(src: string[])
     return <- levelArr
 
 
-def parse_char_pos(src: string[])
+def parse_char_pos(src)
     let y = find_index_if(src) <| $(row) {return find(row, '@')>=0;}
     let x = find(src[y], '@')
     return <- int2(y, x)
@@ -50,8 +44,9 @@ def level_dim(level)
 
 
 def start_level(n)
-    level <- parse_level(levelSrc)
-    charPos = parse_char_pos(levelSrc)
+    level <- parse_level(levels_src[n])
+    charPos = parse_char_pos(levels_src[n])
+
 
 [export]
 def initialize
@@ -59,7 +54,7 @@ def initialize
     imgCrate |> set_image_smooth(true)
     imgPoint |> set_image_smooth(true)
     //charAtlas |> set_image_smooth(true)
-    start_level(0)
+    start_level(cur_level)
 
 
 def sample_cell(level, pos)
@@ -71,6 +66,21 @@ def act(dt: float)
     if get_key(VK_ESCAPE)
         schedule_quit_game()
         return
+
+    if get_key_down(VK_R)
+        start_level(cur_level)
+        return
+
+    if get_key_down(VK_COMMA)
+        cur_level = (cur_level-1+(levels_src |> length)) % (levels_src |> length)
+        start_level(cur_level)
+        return
+
+    if get_key_down(VK_PERIOD)
+        cur_level = (cur_level+1) % (levels_src |> length)
+        start_level(cur_level)
+        return
+
 
     var needMove = true
     if get_key_down(VK_UP)      { charDir = 0; }
@@ -104,8 +114,7 @@ def draw_image_at_cell(img, x, y, cellSize, color)
     draw_image(img, float(x*cellSize), float(y*cellSize), color, float2(cellSize, cellSize))
 
 
-[export]
-def draw
+def draw_scene
     let ldim <- level_dim(level)
     let sw = get_screen_width()
     let sh = get_screen_height()
@@ -129,3 +138,25 @@ def draw
 
     draw_image_region(charAtlas, float(charPos[1]*cellSize), float(charPos[0]*cellSize),
                         float4(64, 64*charDir, -64, 64), 0xFFFFFFFF, float2(cellSize, cellSize))
+
+
+def draw_hud
+    let sw = get_screen_width()
+    let sh = get_screen_height()
+
+    setup_2d_camera(float2(sw/2, sh/2))
+
+    let fontSize = sh/40
+    set_font_size(fontSize)
+
+    let pad = sh/80
+    text_out(pad, pad, "Level {cur_level+1}", 0xFFFFFFFF)
+    text_out(pad, sh-pad-fontSize, "R - reset level, < - prev level, > - next level", 0xFF808080)
+
+    //let get_text_size(text)[1]
+
+
+[export]
+def draw
+    draw_scene()
+    draw_hud()
