@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933334"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="point.svg"
+   inkscape:export-filename="D:\develop\dasbox\projects\sokoban\resources\point.png"
+   inkscape:export-xdpi="192.00002"
+   inkscape:export-ydpi="192.00002"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="3.1992188"
+     inkscape:cx="-13.284493"
+     inkscape:cy="55.169719"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Blur"
+       id="filter421"
+       x="-0.078965132"
+       y="-0.078965132"
+       width="1.1579303"
+       height="1.1579303">
+      <feGaussianBlur
+         stdDeviation="0.2 0.2"
+         result="blur"
+         id="feGaussianBlur419" />
+    </filter>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter1379"
+       x="-0.085063985"
+       y="-0.085063985"
+       width="1.170128"
+       height="1.170128">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.16032549"
+         id="feGaussianBlur1381" />
+    </filter>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       style="fill:#d5f6ff;fill-rule:evenodd;stroke-width:0.264583;stroke:#aaeeff;filter:url(#filter1379)"
+       id="path31"
+       cx="8.4666662"
+       cy="8.4666662"
+       r="3.0393162"
+       inkscape:export-filename="D:\develop\dasbox\projects\sokoban\resources\point.png"
+       inkscape:export-xdpi="47.540001"
+       inkscape:export-ydpi="47.540001" />
+  </g>
+</svg>
