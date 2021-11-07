@@ -23,6 +23,12 @@ var charPos = int2(-1, -1)
 var charDir = 2 // clockwise starting from up=0
 let dirDeltaPos <- [[int2[] int2(-1,0); int2(0,1); int2(1,0); int2(0,-1)]]
 
+struct HistoryRec
+    dir:int
+    movedBox:bool
+
+var history:array<HistoryRec>
+
 
 def parse_level(src)
     var levelArr <- [{for row in src;
@@ -46,6 +52,7 @@ def level_dim(level)
 def start_level(n)
     level <- parse_level(levels_src[n])
     charPos = parse_char_pos(levels_src[n])
+    history |> clear()
 
 
 [export]
@@ -59,6 +66,25 @@ def initialize
 
 def sample_cell(level, pos)
     return level[pos[0]][pos[1]]
+
+
+def rollback
+    if history |> empty()
+        return
+    //let dir:int <- history |> pop()
+    let step <- history[history |> length() - 1]
+    history |> pop()
+
+    charDir = step.dir
+
+    let moveDelta = dirDeltaPos[charDir]
+
+    if step.movedBox
+        let boxPos <- charPos + moveDelta
+        level[charPos[0]][charPos[1]] |= BOX
+        level[boxPos[0]][boxPos[1]] &= ~BOX
+
+    charPos -= moveDelta
 
 
 [export]
@@ -81,6 +107,9 @@ def act(dt: float)
         start_level(cur_level)
         return
 
+    if get_key_down(VK_BACK)
+        rollback()
+        return
 
     var needMove = true
     if get_key_down(VK_UP)      { charDir = 0; }
@@ -105,9 +134,11 @@ def act(dt: float)
 
         if needMove
             charPos += moveDelta
-            if (nextCell & BOX)!=0u
+            let moveBox <- (nextCell & BOX)!=0u
+            if moveBox
                 level[nextPos[0]][nextPos[1]] &= ~BOX
                 level[posAfterNext[0]][posAfterNext[1]] |= BOX
+            history |> push([[HistoryRec dir=charDir, movedBox=moveBox]])
 
 
 def frange(n)
@@ -152,9 +183,7 @@ def draw_hud
 
     let pad = sh/80
     text_out(pad, pad, "Level {cur_level+1}", 0xFFFFFFFF)
-    text_out(pad, sh-pad-fontSize, "R - reset level, < - prev level, > - next level", 0xFF808080)
-
-    //let get_text_size(text)[1]
+    text_out(pad, sh-pad-fontSize, "R - reset level, Backspace <- undo, < - prev level, > - next level", 0xFF808080)
 
 
 [export]
