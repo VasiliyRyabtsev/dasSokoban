@@ -30,6 +30,10 @@ struct HistoryRec
 var history:array<HistoryRec>
 
 
+var stepTransitionT = 0.0f
+var animPos = 0.0f
+
+
 def parse_level(src)
     var levelArr <- [{for row in src;
         [{for cell in row;
@@ -53,6 +57,7 @@ def start_level(n)
     level <- parse_level(levels_src[n])
     charPos = parse_char_pos(levels_src[n])
     history |> clear()
+    stepTransitionT = 0.0f
 
 
 [export]
@@ -85,6 +90,7 @@ def rollback
         level[boxPos[0]][boxPos[1]] &= ~BOX
 
     charPos -= moveDelta
+    stepTransitionT = 0.0f
 
 
 [export]
@@ -111,6 +117,12 @@ def act(dt: float)
         rollback()
         return
 
+    let moveSpeed = 7.0f
+    stepTransitionT = max(0.0f, stepTransitionT-moveSpeed*dt)
+    if stepTransitionT>0.0f
+        let animSpeed = 5.0f
+        animPos = (animPos + animSpeed * dt) % 1.0f
+
     var needMove = true
     if get_key_down(VK_UP)      { charDir = 0; }
     elif get_key_down(VK_RIGHT) { charDir = 1; }
@@ -119,11 +131,11 @@ def act(dt: float)
     else
         needMove = false
 
-    let moveDelta = dirDeltaPos[charDir]
-    let nextPos <- charPos + moveDelta
-    let posAfterNext <- nextPos + moveDelta
-
     if needMove
+        let moveDelta = dirDeltaPos[charDir]
+        let nextPos <- charPos + moveDelta
+        let posAfterNext <- nextPos + moveDelta
+
         let nextCell = level |> sample_cell(nextPos)
         if (nextCell & WALL)!=0u
             needMove = false
@@ -140,9 +152,11 @@ def act(dt: float)
                 level[posAfterNext[0]][posAfterNext[1]] |= BOX
             history |> push([[HistoryRec dir=charDir, movedBox=moveBox]])
 
+            stepTransitionT = 1.0f
 
-def frange(n)
-    return <- [[for v in range(n); float(v)]]
+
+def is_moving_box
+    return !history|>empty() && history[history|>length() - 1].movedBox
 
 
 def draw_scene
@@ -155,21 +169,29 @@ def draw_scene
     enable_alpha_blend()
 
     let unit = float2(1,1)
-    for row, y in level, frange(ldim[0])
-        for cell, x in row, frange(ldim[1])
+    for row, y in level, range(ldim[0])
+        for cell, x in row, range(ldim[1])
+            var pos <- float2(y, x)
+            var boxPos = pos
+            if stepTransitionT>0.0f && int2(y,x)==charPos+dirDeltaPos[charDir] && is_moving_box()
+                boxPos -= float2(dirDeltaPos[charDir]) * stepTransitionT
+
             if (cell & WALL)!=0u
-                imgBrick |> draw_image(x, y, 0xFFD0D0D0, unit)
+                imgBrick |> draw_image(pos[1], pos[0], 0xFFD0D0D0, unit)
             elif (cell & BOX)!=0u
                 if (cell & TARGET)!=0u
-                    imgCrate |> draw_image(x, y, 0xFF80A0FF, unit)
-                    imgPoint |> draw_image(x, y, 0xA0C0C0C0, unit)
+                    imgCrate |> draw_image(boxPos[1], boxPos[0], 0xFF80A0FF, unit)
+                    imgPoint |> draw_image(pos[1], pos[0], 0xA0C0C0C0, unit)
                 else
-                    imgCrate |> draw_image(x, y, 0xFFFFFFFF, unit)
+                    imgCrate |> draw_image(boxPos[1], boxPos[0], 0xFFFFFFFF, unit)
             elif (cell & TARGET)!=0u
-                imgPoint |> draw_image(x, y, 0xFFFFFFFF, unit)
+                imgPoint |> draw_image(pos[1], pos[0], 0xFFFFFFFF, unit)
 
-    draw_image_region(charAtlas, float(charPos[1]), float(charPos[0]),
-                        float4(64, 64*charDir, -64, 64), 0xFFFFFFFF, unit)
+    let charRenderPos <- float2(charPos) - float2(dirDeltaPos[charDir]) * stepTransitionT
+    let nAnimFrames = 9.0
+    let frameNo = int(floor(nAnimFrames * animPos))
+    draw_image_region(charAtlas, charRenderPos[1], charRenderPos[0],
+                        float4(64+64*frameNo, 64*charDir, -64, 64), 0xFFFFFFFF, unit)
 
 
 def draw_hud
