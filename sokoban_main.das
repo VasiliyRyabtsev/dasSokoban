@@ -123,13 +123,12 @@ def act(dt: float)
         let animSpeed = 5.0f
         animPos = (animPos + animSpeed * dt) % 1.0f
 
-    var needMove = true
-    if get_key_down(VK_UP)      { charDir = 0; }
-    elif get_key_down(VK_RIGHT) { charDir = 1; }
-    elif get_key_down(VK_DOWN)  { charDir = 2; }
-    elif get_key_down(VK_LEFT)  { charDir = 3; }
-    else
-        needMove = false
+    var needMove = false
+    if stepTransitionT==0.0f
+        if   get_key(VK_UP)    { charDir = 0; needMove = true; }
+        elif get_key(VK_RIGHT) { charDir = 1; needMove = true; }
+        elif get_key(VK_DOWN)  { charDir = 2; needMove = true; }
+        elif get_key(VK_LEFT)  { charDir = 3; needMove = true; }
 
     if needMove
         let moveDelta = dirDeltaPos[charDir]
