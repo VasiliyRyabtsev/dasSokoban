@@ -28,7 +28,7 @@ struct HistoryRec
     movedBox:bool
 
 var history:array<HistoryRec>
-
+var levelCompleted = false
 
 var stepTransitionT = 0.0f
 var animPos = 0.0f
@@ -93,6 +93,16 @@ def rollback
     stepTransitionT = 0.0f
 
 
+def check_completed
+    if levelCompleted
+        return
+    for row in level
+        for cell in row
+            if (cell & BOX)!=0u && (cell & TARGET)==0u
+                return
+    levelCompleted = true
+
+
 [export]
 def act(dt: float)
     if get_key(VK_ESCAPE)
@@ -153,6 +163,8 @@ def act(dt: float)
 
             stepTransitionT = 1.0f
 
+        check_completed()
+
 
 def is_moving_box
     return !history|>empty() && history[history|>length() - 1].movedBox
@@ -205,6 +217,13 @@ def draw_hud
     let pad = sh/80
     text_out(pad, pad, "Level {cur_level+1}", 0xFFFFFFFF)
     text_out(pad, sh-pad-fontSize, "R - reset level, Backspace <- undo, < - prev level, > - next level", 0xFF808080)
+
+    if levelCompleted
+        fill_rect(0, 0, sw, sh, 0x50202050)
+        set_font_size(sh/20)
+        let text = "Completed!"
+        let bounds = get_text_size(text)
+        text_out((float(sw)-bounds[0])/2.0f, (float(sh)-bounds[1])/2.0f, text, 0xFFFFFFFF)
 
 
 [export]
