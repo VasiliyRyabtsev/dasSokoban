@@ -110,8 +110,8 @@ def act(dt: float)
                 level[posAfterNext[0]][posAfterNext[1]] |= BOX
 
 
-def draw_image_at_cell(img, x, y, cellSize, color)
-    draw_image(img, float(x*cellSize), float(y*cellSize), color, float2(cellSize, cellSize))
+def frange(n)
+    return <- [[for v in range(n); float(v)]]
 
 
 def draw_scene
@@ -120,24 +120,25 @@ def draw_scene
     let sh = get_screen_height()
     let cellSize <- min(sw * 8 / (ldim[1] * 10), sh * 8 / (ldim[0] * 10))
 
-    setup_2d_camera(float2(cellSize*ldim[1]/2, cellSize*ldim[0]/2))
+    setup_2d_camera(float2(ldim[1]/2, ldim[0]/2), float(cellSize))
     enable_alpha_blend()
 
-    for row, y in level, range(ldim[0])
-        for cell, x in row, range(ldim[1])
+    let unit = float2(1,1)
+    for row, y in level, frange(ldim[0])
+        for cell, x in row, frange(ldim[1])
             if (cell & WALL)!=0u
-                imgBrick |> draw_image_at_cell(x, y, cellSize, 0xFFD0D0D0)
+                imgBrick |> draw_image(x, y, 0xFFD0D0D0, unit)
             elif (cell & BOX)!=0u
                 if (cell & TARGET)!=0u
-                    imgCrate |> draw_image_at_cell(x, y, cellSize, 0xFF80A0FF)
-                    imgPoint |> draw_image_at_cell(x, y, cellSize, 0xA0C0C0C0)
+                    imgCrate |> draw_image(x, y, 0xFF80A0FF, unit)
+                    imgPoint |> draw_image(x, y, 0xA0C0C0C0, unit)
                 else
-                    imgCrate |> draw_image_at_cell(x, y, cellSize, 0xFFFFFFFF)
+                    imgCrate |> draw_image(x, y, 0xFFFFFFFF, unit)
             elif (cell & TARGET)!=0u
-                imgPoint |> draw_image_at_cell(x, y, cellSize, 0xFFFFFFFF)
+                imgPoint |> draw_image(x, y, 0xFFFFFFFF, unit)
 
-    draw_image_region(charAtlas, float(charPos[1]*cellSize), float(charPos[0]*cellSize),
-                        float4(64, 64*charDir, -64, 64), 0xFFFFFFFF, float2(cellSize, cellSize))
+    draw_image_region(charAtlas, float(charPos[1]), float(charPos[0]),
+                        float4(64, 64*charDir, -64, 64), 0xFFFFFFFF, unit)
 
 
 def draw_hud
