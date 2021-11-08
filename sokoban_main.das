@@ -1,5 +1,6 @@
 require strings
 require daslib/media
+require daslib/strings_boost
 
 require levels
 
@@ -29,6 +30,7 @@ struct HistoryRec
 
 var history:array<HistoryRec>
 var levelCompleted = false
+var levelWasSolved = false
 
 var stepTransitionT = 0.0f
 var animPos = 0.0f
@@ -53,12 +55,28 @@ def level_dim(level)
     return <- int2(level |> length, level[0] |> length)
 
 
+def build_level_key(level)
+    return level |> join("|")
+
+
+def save_level_solved(n)
+    let key = build_level_key(levels_src[n])
+    local_storage_set(key, "+")
+
+
+def was_level_solved(n)
+    let key = build_level_key(levels_src[n])
+    return local_storage_has_key(key)
+
+
 def start_level(n)
     level <- parse_level(levels_src[n])
     charPos = parse_char_pos(levels_src[n])
     history |> clear()
     stepTransitionT = 0.0f
     levelCompleted = false
+    levelWasSolved = was_level_solved(n)
+
 
 
 [export]
@@ -102,6 +120,7 @@ def check_completed
             if (cell & BOX)!=0u && (cell & TARGET)==0u
                 return
     levelCompleted = true
+    save_level_solved(cur_level)
 
 
 def change_level(delta)
@@ -230,7 +249,8 @@ def draw_hud
     set_font_size(fontSize)
 
     let pad = sh/80
-    text_out(pad, pad, "Level {cur_level+1}", 0xFFFFFFFF)
+    let solvedText = levelWasSolved ? " (solved)" : ""
+    text_out(pad, pad, "Level {cur_level+1}{solvedText}", 0xFFFFFFFF)
     text_out(pad, sh-pad-fontSize, "R - reset level, Backspace <- undo, < - prev level, > - next level", 0xFF808080)
 
     if levelCompleted
