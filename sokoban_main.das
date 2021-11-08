@@ -18,7 +18,7 @@ let
 var cur_level = 0
 var level:array<array<uint>>
 
-let cellTypeMap:table<int; uint> <- {{'#' => WALL; '$' => BOX; '.' => TARGET}}
+let cellTypeMap:table<int; uint> <- {{'#' => WALL; '$' => BOX; '.' => TARGET; ' ' => 0u; '@' => 0u}}
 
 var charPos = int2(-1, -1)
 var charDir = 2 // clockwise starting from up=0
@@ -36,10 +36,17 @@ var stepTransitionT = 0.0f
 var animPos = 0.0f
 
 
+def resolve_cell_char(cell_char)
+    let val = cellTypeMap |> find(cell_char) ?? 0xFF00u
+    if val == 0xFF00u
+        panic("Unexpected char '%c' in level source" |> format(cell_char))
+    return val
+
+
 def parse_level(src)
     var levelArr <- [{for row in src;
         [{for cell in row;
-            cellTypeMap |> find(cell) ?? 0u
+            resolve_cell_char(cell)
         }]
     }]
     return <- levelArr
