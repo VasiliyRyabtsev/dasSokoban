@@ -58,6 +58,7 @@ def start_level(n)
     charPos = parse_char_pos(levels_src[n])
     history |> clear()
     stepTransitionT = 0.0f
+    levelCompleted = false
 
 
 [export]
@@ -103,6 +104,11 @@ def check_completed
     levelCompleted = true
 
 
+def change_level(delta)
+    cur_level = (cur_level+delta+(levels_src |> length)) % (levels_src |> length)
+    start_level(cur_level)
+
+
 [export]
 def act(dt: float)
     if get_key(VK_ESCAPE)
@@ -114,13 +120,15 @@ def act(dt: float)
         return
 
     if get_key_down(VK_COMMA)
-        cur_level = (cur_level-1+(levels_src |> length)) % (levels_src |> length)
-        start_level(cur_level)
+        change_level(-1)
         return
 
     if get_key_down(VK_PERIOD)
-        cur_level = (cur_level+1) % (levels_src |> length)
-        start_level(cur_level)
+        change_level(1)
+        return
+
+    if get_key_down(VK_SPACE) && levelCompleted
+        change_level(1)
         return
 
     if get_key_down(VK_BACK)
@@ -205,6 +213,13 @@ def draw_scene
                         float4(64+64*frameNo, 64*charDir, -64, 64), 0xFFFFFFFF, unit)
 
 
+def text_centered(y_offs; text; font_size; color=0xFFFFFFFF)
+    let screensz = float2(get_screen_width(), get_screen_height())
+    set_font_size(font_size)
+    let bounds = get_text_size(text)
+    text_out((screensz[0]-bounds[0])/2.0f, (screensz[1]-bounds[1])/2.0f+float(y_offs), text, color)
+
+
 def draw_hud
     let sw = get_screen_width()
     let sh = get_screen_height()
@@ -220,10 +235,8 @@ def draw_hud
 
     if levelCompleted
         fill_rect(0, 0, sw, sh, 0x50202050)
-        set_font_size(sh/20)
-        let text = "Completed!"
-        let bounds = get_text_size(text)
-        text_out((float(sw)-bounds[0])/2.0f, (float(sh)-bounds[1])/2.0f, text, 0xFFFFFFFF)
+        text_centered(-fontSize, "Completed!", sh/20)
+        text_centered(fontSize, "Press Space to continue", fontSize, 0xC0C0C0C0)
 
 
 [export]
