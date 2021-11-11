@@ -161,10 +161,10 @@ def act(dt: float)
         rollback()
         return
 
-    let moveSpeed = 7.0f
+    let moveSpeed = 4.0f
     stepTransitionT = max(0.0f, stepTransitionT-moveSpeed*dt)
     if stepTransitionT>0.0f
-        let animSpeed = 5.0f
+        let animSpeed = 3.0f
         animPos = (animPos + animSpeed * dt) % 1.0f
 
     var needMove = false
