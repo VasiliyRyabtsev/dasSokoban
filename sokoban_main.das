@@ -3,6 +3,7 @@ require daslib/media
 require daslib/strings_boost
 
 require levels
+require ui
 
 var imgCrate <- create_image("resources/crate.png")
 let imgBrick <- create_image("resources/bricks.png")
@@ -135,12 +136,7 @@ def change_level(delta)
     start_level(cur_level)
 
 
-[export]
-def act(dt: float)
-    if get_key(VK_ESCAPE)
-        schedule_quit_game()
-        return
-
+def act_game(dt: float)
     if get_key_down(VK_R)
         start_level(cur_level)
         return
@@ -198,6 +194,13 @@ def act(dt: float)
             stepTransitionT = 1.0f
 
         check_completed()
+
+
+[export]
+def act(dt: float)
+    act_ui(dt)
+    if !showMenu
+        act_game(dt)
 
 
 def is_moving_box
@@ -266,7 +269,10 @@ def draw_hud
         text_centered(fontSize, "Press Space to continue", fontSize, 0xC0C0C0C0)
 
 
+
 [export]
 def draw
     draw_scene()
     draw_hud()
+    if showMenu
+        draw_menu()
