@@ -1,3 +1,27 @@
+require strings
+require daslib/strings_boost
+require daslib/media
+
+
+def level_dim(level)
+    return <- int2(level |> length, level[0] |> length)
+
+
+def build_level_key(level)
+    return level |> join("|")
+
+
+def save_level_solved(n)
+    let key = build_level_key(levels_src[n])
+    local_storage_set(key, "+")
+
+
+def was_level_solved(n)
+    let key = build_level_key(levels_src[n])
+    return local_storage_has_key(key)
+
+
+
 let levels_src: array<array<string>> <- [{auto
 
 /*
