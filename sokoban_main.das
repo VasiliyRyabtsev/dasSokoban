@@ -168,7 +168,7 @@ def act(dt: float)
         animPos = (animPos + animSpeed * dt) % 1.0f
 
     var needMove = false
-    if stepTransitionT==0.0f
+    if stepTransitionT==0.0f && !levelCompleted
         if   get_key(VK_UP)    { charDir = 0; needMove = true; }
         elif get_key(VK_RIGHT) { charDir = 1; needMove = true; }
         elif get_key(VK_DOWN)  { charDir = 2; needMove = true; }
