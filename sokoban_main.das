@@ -3,88 +3,13 @@ require daslib/media
 require daslib/strings_boost
 
 require levels
+require game
 require ui
 
 var imgCrate <- create_image("resources/crate.png")
 let imgBrick <- create_image("resources/bricks.png")
 var imgPoint <- create_image("resources/point.png")
 var charAtlas <- create_image("resources/char.png")
-
-
-let
-    WALL   = 0x1
-    BOX    = 0x2
-    TARGET = 0x4
-
-var cur_level = 0
-var level:array<array<uint>>
-
-let cellTypeMap:table<int; uint> <- {{'#' => WALL; '$' => BOX; '.' => TARGET; ' ' => 0u; '@' => 0u}}
-
-var charPos = int2(-1, -1)
-var charDir = 2 // clockwise starting from up=0
-let dirDeltaPos <- [[int2[] int2(-1,0); int2(0,1); int2(1,0); int2(0,-1)]]
-
-struct HistoryRec
-    dir:int
-    movedBox:bool
-
-var history:array<HistoryRec>
-var levelCompleted = false
-var levelWasSolved = false
-
-var stepTransitionT = 0.0f
-var animPos = 0.0f
-
-
-def resolve_cell_char(cell_char)
-    let val = cellTypeMap |> find(cell_char) ?? 0xFF00u
-    if val == 0xFF00u
-        panic("Unexpected char '%c' in level source" |> format(cell_char))
-    return val
-
-
-def parse_level(src)
-    var levelArr <- [{for row in src;
-        [{for cell in row;
-            resolve_cell_char(cell)
-        }]
-    }]
-    return <- levelArr
-
-
-def parse_char_pos(src)
-    let y = find_index_if(src) <| $(row) {return find(row, '@')>=0;}
-    let x = find(src[y], '@')
-    return <- int2(y, x)
-
-
-def level_dim(level)
-    return <- int2(level |> length, level[0] |> length)
-
-
-def build_level_key(level)
-    return level |> join("|")
-
-
-def save_level_solved(n)
-    let key = build_level_key(levels_src[n])
-    local_storage_set(key, "+")
-
-
-def was_level_solved(n)
-    let key = build_level_key(levels_src[n])
-    return local_storage_has_key(key)
-
-
-def start_level(n)
-    level <- parse_level(levels_src[n])
-    charPos = parse_char_pos(levels_src[n])
-    history |> clear()
-    stepTransitionT = 0.0f
-    levelCompleted = false
-    levelWasSolved = was_level_solved(n)
-
 
 
 [export]
@@ -132,8 +57,7 @@ def check_completed
 
 
 def change_level(delta)
-    cur_level = (cur_level+delta+(levels_src |> length)) % (levels_src |> length)
-    start_level(cur_level)
+    start_level((cur_level+delta+length(levels_src)) % length(levels_src))
 
 
 def act_game(dt: float)
@@ -199,7 +123,7 @@ def act_game(dt: float)
 [export]
 def act(dt: float)
     act_ui(dt)
-    if !showMenu
+    if ui_root==null
         act_game(dt)
 
 
@@ -274,5 +198,4 @@ def draw_hud
 def draw
     draw_scene()
     draw_hud()
-    if showMenu
-        draw_menu()
+    draw_menu()
